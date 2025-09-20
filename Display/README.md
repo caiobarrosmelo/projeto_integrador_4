@@ -74,7 +74,6 @@ useEffect(() => {
   const interval = setInterval(fetchWeather, 300000) // Atualiza a cada 5min
   return () => clearInterval(interval)
 }, [])
-
+```
 ### **Estrutura dos dados esperados:**
 - **Clima**: `{ temperature, condition }`
-```
