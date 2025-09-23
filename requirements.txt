@@ -1,0 +1,9 @@
+requests
+pandas
+numpy
+matplotlib
+torch
+sqlalchemy
+scikit-learn
+prophet
+ultralytics
