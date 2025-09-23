@@ -1,7 +1,7 @@
+````markdown
 # projeto_integrador_4
-Repositório destinado ao conjunto de atividades desenvolvidas em torno do Projeto Integrador no 4º semestre do curso de ADS. O foco será uma aplicação em torno de IOT.
+Repositório destinado ao conjunto de atividades desenvolvidas em torno do Projeto Integrador no 4º semestre do curso de ADS. O foco será uma aplicação em torno de IoT.
 
-```markdown
 # Bus IoT Monitoring
 
 Sistema de monitoramento IoT para coleta de dados de dispositivos ESP32, processamento na nuvem e visualização em dashboard. O projeto inclui integração com Machine Learning para previsão de ocupação e análise de dados.
@@ -10,8 +10,7 @@ Sistema de monitoramento IoT para coleta de dados de dispositivos ESP32, process
 
 ## Estrutura do Projeto
 
-``` text
-
+```text
 bus-iot-monitoring/
 │
 ├── README.md                  # Este arquivo
@@ -19,66 +18,66 @@ bus-iot-monitoring/
 ├── requirements.txt           # Bibliotecas Python necessárias (ML, API, etc.)
 │
 ├── hardware/                  # Código e componentes do dispositivo ESP32
-│   ├── ESP32\_S3/
+│   ├── ESP32_S3/
 │   │   ├── main.ino           # Código principal para ESP32S3
 │   │   ├── camera.ino         # Captura de imagens
-│   │   └── gps\_gprs.ino       # Envio de coordenadas via GPRS
+│   │   └── gps_gprs.ino       # Envio de coordenadas via GPRS
 │   └── docs/                  # Esquemas de ligação, datasheets
 │
 ├── server/                    # Código do servidor na nuvem
 │   ├── api/                   # Endpoints HTTP para recebimento de dados
-│   │   ├── receive\_location.py
-│   │   ├── receive\_image.py
+│   │   ├── receive_location.py
+│   │   ├── receive_image.py
 │   │   └── utils.py
 │   ├── ml/                    # Modelos de Machine Learning
 │   │   ├── yolov5/             # Código e pesos do YOLO
-│   │   └── occupancy\_predictor.py
+│   │   └── occupancy_predictor.py
 │   ├── db/                    # Scripts de criação e seed do banco de dados
-│   │   ├── create\_tables.sql
-│   │   └── seed\_data.sql
+│   │   ├── create_tables.sql
+│   │   └── seed_data.sql
 │   └── config.py              # Configurações gerais (DB, API keys)
 │
 ├── client/                    # Front-end (Totem/Display)
 │   ├── dashboard/
 │   │   ├── app.py             # Dashboard Flask/Streamlit
-│   │   └── templates/         # HTML/CSS/JS
+│   │   └── templates/         # HTML/CSS/JS se necessário
 │   └── config.py
 │
 ├── data/                      # Dados de exemplo e logs
-│   ├── sample\_images/
-│   ├── gps\_logs.csv
-│   └── prediction\_logs.csv
+│   ├── sample_images/
+│   ├── gps_logs.csv
+│   └── prediction_logs.csv
 │
 ├── tests/                     # Testes unitários e de integração
-│   ├── test\_esp32.py
-│   ├── test\_server.py
-│   └── test\_ml.py
+│   ├── test_esp32.py
+│   ├── test_server.py
+│   └── test_ml.py
 │
 └── docs/                      # Documentação adicional
-├── diagram\_ER.png          # Modelo ER do banco
-├── flowchart.png           # Fluxo de coleta → processamento → dashboard
-└── setup\_guide.md
-
-```
+    ├── diagram_ER.png          # Modelo ER do banco
+    ├── flowchart.png           # Fluxo de coleta → processamento → dashboard
+    └── setup_guide.md
+````
 
 ---
 
 ## Pré-requisitos
 
-- Python 3.10+
-- PostgreSQL 15+
-- Bibliotecas listadas em `requirements.txt`
-- Dispositivo ESP32S3 compatível com código fornecido
+* Python 3.10+
+* PostgreSQL 15+
+* Bibliotecas listadas em `requirements.txt`
+* Dispositivo ESP32S3 compatível com código fornecido
 
 ---
 
 ## Instalação e Execução
 
 1. Clone o repositório:
+
 ```bash
-git clone [https://github.com/caiobarrosmelo/projeto_integrador_4.git]
+git clone https://github.com/caiobarrosmelo/projeto_integrador_4.git
 cd bus-iot-monitoring
-````
+```
 
 2. Instale dependências Python:
 
@@ -106,9 +105,3 @@ python server/api/receive_image.py
 ```bash
 python client/dashboard/app.py
 ```
-
----
-
-## Licença
-
-*Haverá?*
