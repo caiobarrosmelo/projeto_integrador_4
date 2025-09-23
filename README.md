@@ -59,7 +59,7 @@ bus-iot-monitoring/
 ├── flowchart.png           # Fluxo de coleta → processamento → dashboard
 └── setup\_guide.md
 
-````
+```
 
 ---
 
