@@ -10,51 +10,50 @@ Sistema de monitoramento IoT para coleta de dados de dispositivos ESP32, process
 ## Estrutura do Projeto
 
 ```text
-bus-iot-monitoring/
+projeto_integrador_4/
 │
-├── README.md                  # Este arquivo
-├── LICENSE                    # Licença do projeto
-├── requirements.txt           # Bibliotecas Python necessárias (ML, API, etc.)
+├── README.md                       # Este arquivo
+├── LICENSE                         # Licença do projeto
+├── requirements.txt                # Bibliotecas Python necessárias (ML, API, etc.)
 │
-├── hardware/                  # Código e componentes do dispositivo ESP32
+├── hardware/                       # Código e componentes do dispositivo ESP32
 │   ├── ESP32_S3/
-│   │   ├── main.ino           # Código principal para ESP32S3
-│   │   ├── camera.ino         # Captura de imagens
-│   │   └── gps_gprs.ino       # Envio de coordenadas via GPRS
-│   └── docs/                  # Esquemas de ligação, datasheets
+│   │   ├── main.ino                # Código principal para ESP32S3
+│   │   ├── camera.ino              # Captura de imagens
+│   │   └── gps_gprs.ino            # Envio de coordenadas via GPRS
+│   └── docs/                       # Esquemas de ligação, datasheets
 │
-├── server/                    # Código do servidor na nuvem
-│   ├── api/                   # Endpoints HTTP para recebimento de dados
+├── server/                         # Código do servidor na nuvem
+│   ├── api/                        # Endpoints HTTP para recebimento de dados
 │   │   ├── receive_location.py
 │   │   ├── receive_image.py
 │   │   └── utils.py
-│   ├── ml/                    # Modelos de Machine Learning
-│   │   ├── yolov5/             # Código e pesos do YOLO
+│   ├── ml/                         # Modelos de Machine Learning
+│   │   ├── yolov5/                 # Código e pesos do YOLO
 │   │   └── occupancy_predictor.py
-│   ├── db/                    # Scripts de criação e seed do banco de dados
+│   ├── db/                         # Scripts de criação e seed do banco de dados
 │   │   ├── create_tables.sql
 │   │   └── seed_data.sql
-│   └── config.py              # Configurações gerais (DB, API keys)
+│   └── config.py                   # Configurações gerais (DB, API keys)
 │
-├── client/                    # Front-end (Totem/Display)
-│   ├── dashboard/
-│   │   ├── app.py             # Dashboard Flask/Streamlit
-│   │   └── templates/         # HTML/CSS/JS se necessário
-│   └── config.py
+├── client/                         # Front-end (Totem/Display)
+│   ├── app/                        # Páginas e layouts da aplicação
+│   ├── components/                 # Componentes reutilizáveis
+│   └── lib/                        # Utilitários e configurações
 │
-├── data/                      # Dados de exemplo e logs
+├── data/                           # Dados de exemplo e logs
 │   ├── sample_images/
 │   ├── gps_logs.csv
 │   └── prediction_logs.csv
 │
-├── tests/                     # Testes unitários e de integração
+├── tests/                          # Testes unitários e de integração
 │   ├── test_esp32.py
 │   ├── test_server.py
 │   └── test_ml.py
 │
-└── docs/                      # Documentação adicional
-    ├── diagram_ER.png          # Modelo ER do banco
-    ├── flowchart.png           # Fluxo de coleta → processamento → dashboard
+└── docs/                           # Documentação adicional
+    ├── diagram_ER.png              # Modelo ER do banco
+    ├── flowchart.png               # Fluxo de coleta → processamento → dashboard
     └── setup_guide.md
 ````
 
