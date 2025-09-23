@@ -10,7 +10,7 @@ Sistema de monitoramento IoT para coleta de dados de dispositivos ESP32, process
 
 ## Estrutura do Projeto
 
-```
+``` text
 
 bus-iot-monitoring/
 │
