@@ -18,10 +18,9 @@ projeto_integrador_4/
 │
 ├── hardware/                       # Código e componentes do dispositivo ESP32
 │   ├── ESP32_S3/
-│   │   ├── main.ino                # Código principal para ESP32S3
-│   │   ├── camera.ino              # Captura de imagens
-│   │   └── gps_gprs.ino            # Envio de coordenadas via GPRS
-│   └── docs/                       # Esquemas de ligação, datasheets
+│   │   ├── main_real.ino           # Código real para ESP32S3 com periféricos
+│   │   └── main_simulated.ino      # Código simulado para ESP32S3
+│   └── README.md/                  # Documentação de arquitetura, dependências, pinos configurados, intervalos de envio e instruções de uso.
 │
 ├── server/                         # Código do servidor na nuvem
 │   ├── api/                        # Endpoints HTTP para recebimento de dados
