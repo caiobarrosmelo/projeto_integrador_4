@@ -1,6 +1,6 @@
 """
 API para recebimento de dados de localização GPS do ESP32
-Calcula ETA (Estimated Time of Arrival) em tempo real baseado em histórico
+Usa OSRM para cálculo de ETA mais preciso
 Baseado nos requisitos do projeto IoT de monitoramento de ônibus
 """
 
@@ -17,12 +17,14 @@ import logging
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import DATABASE_CONFIG, ETA_CONFIG, DESTINATIONS, INTERVAL_CONFIG
+from config import DATABASE_CONFIG, ETA_CONFIG, DESTINATIONS, INTERVAL_CONFIG, OSRM_CONFIG
 from api.utils import (
     validate_gps_coordinates, validate_bus_line, parse_timestamp,
     create_db_connection, log_api_request,
-    get_traffic_factor_by_hour, get_nearest_destination,
-    calculate_adaptive_interval
+    get_nearest_destination, calculate_adaptive_interval
+)
+from api.eta_osrm import (
+    calculate_eta_with_osrm, get_traffic_factor_by_hour_osrm
 )
 
 # Configuração de logging
@@ -30,137 +32,6 @@ logger = logging.getLogger(__name__)
 
 # Cria blueprint para a API de localização
 location_bp = Blueprint('location', __name__)
-
-class ETACalculator:
-    """Classe para cálculo de ETA em tempo real"""
-    
-    def __init__(self):
-        self.earth_radius = 6371  # Raio da Terra em km
-        
-    def haversine_distance(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-        """Calcula distância entre dois pontos GPS usando fórmula de Haversine"""
-        lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
-        dlat = lat2 - lat1
-        dlon = lon2 - lon1
-        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-        c = 2 * math.asin(math.sqrt(a))
-        return self.earth_radius * c
-    
-    def calculate_speed(self, locations: List[Dict]) -> float:
-        """Calcula velocidade média baseada nas últimas localizações"""
-        if len(locations) < 2:
-            return ETA_CONFIG['default_speed_kmh']
-            
-        total_distance = 0.0
-        total_time = 0.0
-        
-        for i in range(1, len(locations)):
-            prev = locations[i-1]
-            curr = locations[i]
-            
-            distance = self.haversine_distance(
-                prev['latitude'], prev['longitude'],
-                curr['latitude'], curr['longitude']
-            )
-            
-            time_diff = (curr['timestamp'] - prev['timestamp']).total_seconds() / 3600
-            
-            if time_diff > 0:
-                total_distance += distance
-                total_time += time_diff
-        
-        avg_speed = total_distance / total_time if total_time > 0 else ETA_CONFIG['default_speed_kmh']
-        return max(ETA_CONFIG['min_speed_kmh'], min(avg_speed, ETA_CONFIG['max_speed_kmh']))
-    
-    def predict_eta(self, current_lat: float, current_lon: float, 
-                   target_lat: float, target_lon: float, 
-                   bus_line: str, db_connection) -> Dict:
-        """Calcula ETA baseado em distância, velocidade histórica e padrões de tráfego"""
-        try:
-            # 1. Calcula distância até o destino
-            distance = self.haversine_distance(current_lat, current_lon, target_lat, target_lon)
-            
-            # 2. Busca histórico recente da linha
-            cursor = db_connection.cursor(cursor_factory=RealDictCursor)
-            query = """
-                SELECT latitude, longitude, timestamp_location
-                FROM bus_location 
-                WHERE bus_line = %s 
-                AND timestamp_location >= %s
-                ORDER BY timestamp_location DESC
-                LIMIT %s
-            """
-            
-            since = datetime.now() - timedelta(hours=ETA_CONFIG['history_hours'])
-            cursor.execute(query, (bus_line, since, ETA_CONFIG['max_data_points']))
-            recent_locations = cursor.fetchall()
-            
-            # 3. Calcula velocidade média
-            if len(recent_locations) >= ETA_CONFIG['min_data_points']:
-                locations = [
-                    {
-                        'latitude': float(loc['latitude']),
-                        'longitude': float(loc['longitude']),
-                        'timestamp': loc['timestamp_location']
-                    }
-                    for loc in recent_locations
-                ]
-                avg_speed = self.calculate_speed(locations)
-            else:
-                avg_speed = ETA_CONFIG['default_speed_kmh']
-            
-            # 4. Ajusta velocidade baseado no horário (tráfego)
-            current_hour = datetime.now().hour
-            traffic_factor = get_traffic_factor_by_hour(current_hour)
-            final_speed = avg_speed * traffic_factor
-            
-            # 5. Calcula tempo estimado
-            if final_speed > 0:
-                eta_minutes = (distance / final_speed) * 60
-            else:
-                eta_minutes = 999
-            
-            # 6. Calcula confiança
-            confidence = self._calculate_confidence(len(recent_locations), avg_speed)
-            
-            # 7. Timestamp estimado de chegada
-            estimated_arrival = datetime.now() + timedelta(minutes=eta_minutes)
-            
-            return {
-                'eta_minutes': round(eta_minutes, 1),
-                'estimated_arrival': estimated_arrival.isoformat(),
-                'distance_km': round(distance, 2),
-                'avg_speed_kmh': round(avg_speed, 1),
-                'adjusted_speed_kmh': round(final_speed, 1),
-                'confidence_percent': round(confidence, 1),
-                'traffic_factor': round(traffic_factor, 2)
-            }
-            
-        except Exception as e:
-            logger.error(f"Erro ao calcular ETA: {e}")
-            return {
-                'eta_minutes': 999,
-                'estimated_arrival': None,
-                'distance_km': 0,
-                'avg_speed_kmh': 0,
-                'adjusted_speed_kmh': 0,
-                'confidence_percent': 0,
-                'error': str(e)
-            }
-    
-    def _calculate_confidence(self, data_points: int, speed: float) -> float:
-        """Calcula confiança da previsão"""
-        data_confidence = min(data_points / 10, 1.0) * 50
-        
-        if ETA_CONFIG['min_speed_kmh'] <= speed <= ETA_CONFIG['max_speed_kmh']:
-            speed_confidence = 30
-        else:
-            speed_confidence = 15
-        
-        return min(data_confidence + speed_confidence, 95)
-
-# Inicializa o calculador de ETA
-eta_calculator = ETACalculator()
 
 def get_db_connection():
     """Cria conexão com o banco PostgreSQL"""
@@ -221,9 +92,136 @@ def save_adaptive_interval(location_id: int, interval_seconds: int, db_connectio
         logger.error(f"Erro ao salvar intervalo adaptativo: {e}")
         db_connection.rollback()
 
+def calculate_eta_with_osrm_and_history(current_lat: float, current_lon: float,
+                                       target_lat: float, target_lon: float,
+                                       bus_line: str, db_connection) -> Dict:
+    """
+    Calcula ETA usando OSRM + histórico da linha para ajustes
+    """
+    try:
+        # 1. Calcula ETA base usando OSRM
+        current_hour = datetime.now().hour
+        traffic_factor = get_traffic_factor_by_hour_osrm(current_hour)
+        
+        osrm_result = calculate_eta_with_osrm(
+            current_lat, current_lon, target_lat, target_lon, traffic_factor
+        )
+        
+        if osrm_result['status'] != 'success':
+            # Fallback para cálculo manual se OSRM falhar
+            logger.warning("OSRM falhou, usando cálculo manual")
+            return calculate_eta_manual_fallback(current_lat, current_lon, target_lat, target_lon, bus_line, db_connection)
+        
+        # 2. Ajusta baseado no histórico da linha (opcional)
+        history_adjustment = get_history_adjustment(bus_line, current_hour, db_connection)
+        
+        # 3. Aplica ajuste histórico se disponível
+        if history_adjustment != 1.0:
+            base_eta = osrm_result['eta_minutes']
+            adjusted_eta = base_eta * history_adjustment
+            
+            # Recalcula timestamp de chegada
+            estimated_arrival = datetime.now() + timedelta(minutes=adjusted_eta)
+            
+            osrm_result.update({
+                'eta_minutes': round(adjusted_eta, 1),
+                'estimated_arrival': estimated_arrival.isoformat(),
+                'history_adjustment': round(history_adjustment, 2),
+                'base_eta_minutes': base_eta
+            })
+        
+        return osrm_result
+        
+    except Exception as e:
+        logger.error(f"Erro ao calcular ETA com OSRM: {e}")
+        return calculate_eta_manual_fallback(current_lat, current_lon, target_lat, target_lon, bus_line, db_connection)
+
+def get_history_adjustment(bus_line: str, hour: int, db_connection) -> float:
+    """
+    Obtém ajuste baseado no histórico da linha
+    """
+    try:
+        cursor = db_connection.cursor()
+        query = """
+            SELECT 
+                AVG(EXTRACT(EPOCH FROM (pc.actual_arrival - pc.predicted_arrival))/60) as avg_delay
+            FROM prediction_confidence pc
+            JOIN bus_location bl ON pc.location_id = bl.id
+            WHERE bl.bus_line = %s
+            AND pc.actual_arrival IS NOT NULL
+            AND EXTRACT(HOUR FROM bl.timestamp_location) = %s
+            AND pc.timestamp_prediction >= %s
+        """
+        
+        since = datetime.now() - timedelta(days=7)
+        cursor.execute(query, (bus_line, hour, since))
+        result = cursor.fetchone()
+        
+        if result and result[0] is not None:
+            avg_delay = result[0]
+            # Converte atraso em fator de ajuste
+            if avg_delay > 0:
+                # Atraso médio de 5 minutos = fator 1.1 (10% mais tempo)
+                adjustment = max(0.8, 1.0 + (avg_delay / 50))
+            else:
+                # Adiantamento médio = fator < 1.0 (menos tempo)
+                adjustment = min(1.2, 1.0 + (avg_delay / 50))
+            
+            return adjustment
+        
+        return 1.0  # Sem histórico, usa fator neutro
+        
+    except Exception as e:
+        logger.error(f"Erro ao obter ajuste histórico: {e}")
+        return 1.0
+
+def calculate_eta_manual_fallback(current_lat: float, current_lon: float,
+                                 target_lat: float, target_lon: float,
+                                 bus_line: str, db_connection) -> Dict:
+    """
+    Fallback para cálculo manual se OSRM falhar
+    """
+    try:
+        # Cálculo manual simples baseado em distância
+        from api.utils import calculate_distance_km, get_traffic_factor_by_hour
+        
+        distance = calculate_distance_km(current_lat, current_lon, target_lat, target_lon)
+        current_hour = datetime.now().hour
+        traffic_factor = get_traffic_factor_by_hour(current_hour)
+        
+        # Velocidade média para ônibus urbano
+        avg_speed = 20.0  # km/h
+        adjusted_speed = avg_speed * traffic_factor
+        
+        eta_minutes = (distance / adjusted_speed) * 60
+        estimated_arrival = datetime.now() + timedelta(minutes=eta_minutes)
+        
+        return {
+            'status': 'success',
+            'eta_minutes': round(eta_minutes, 1),
+            'estimated_arrival': estimated_arrival.isoformat(),
+            'distance_km': round(distance, 2),
+            'avg_speed_kmh': avg_speed,
+            'adjusted_speed_kmh': round(adjusted_speed, 1),
+            'confidence_percent': OSRM_CONFIG['confidence_fallback'],  # Menor confiança para cálculo manual
+            'traffic_factor': round(traffic_factor, 2),
+            'source': 'manual_fallback'
+        }
+        
+    except Exception as e:
+        logger.error(f"Erro no fallback manual: {e}")
+        return {
+            'status': 'error',
+            'eta_minutes': 999,
+            'estimated_arrival': None,
+            'distance_km': 0,
+            'confidence_percent': 0,
+            'error': str(e)
+        }
+
 @location_bp.route('/location', methods=['POST'])
 def receive_location():
-    """Endpoint para receber dados de localização do ESP32"""
+    """Endpoint para receber dados de localização do ESP32 usando OSRM"""
     try:
         if not request.is_json:
             return jsonify({'error': 'Content-Type deve ser application/json'}), 400
@@ -272,8 +270,8 @@ def receive_location():
         if not nearest_dest:
             return jsonify({'error': 'Nenhum destino encontrado'}), 500
         
-        # Calcula ETA
-        eta_data = eta_calculator.predict_eta(
+        # Calcula ETA usando OSRM
+        eta_data = calculate_eta_with_osrm_and_history(
             latitude, longitude, 
             nearest_dest['latitude'], nearest_dest['longitude'], 
             bus_line, db_connection
@@ -284,7 +282,7 @@ def receive_location():
         
         # Calcula intervalo adaptativo
         current_hour = datetime.now().hour
-        traffic_factor = get_traffic_factor_by_hour(current_hour)
+        traffic_factor = get_traffic_factor_by_hour_osrm(current_hour)
         adaptive_interval = calculate_adaptive_interval(
             INTERVAL_CONFIG['default_interval_seconds'],
             traffic_factor,
@@ -302,7 +300,7 @@ def receive_location():
             'destination': nearest_dest,
             'eta': eta_data,
             'adaptive_interval_seconds': adaptive_interval,
-            'message': 'Localização recebida e ETA calculado'
+            'message': 'Localização recebida e ETA calculado com OSRM'
         }
         
         # Log da requisição
