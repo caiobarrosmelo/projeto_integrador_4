@@ -67,18 +67,5 @@ if __name__ == "__main__":
     
     if test_osrm_simple():
         test_google_maps_comparison()
-        
-        print("\n💡 Vantagens do OSRM:")
-        print("   ✅ Mais preciso que distância em linha reta")
-        print("   ✅ Considera vias reais, semáforos, curvas")
-        print("   ✅ Gratuito e confiável")
-        print("   ✅ Atualizado com OpenStreetMap")
-        print("   ✅ API simples e rápida")
-        
-        print("\n📈 Próximos passos:")
-        print("   1. Integrar OSRM na API")
-        print("   2. Adicionar histórico da linha")
-        print("   3. Implementar fallback manual")
-        print("   4. Testar com dados reais do ESP32")
-    
+            
     print("\n✅ Teste concluído!")

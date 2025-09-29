@@ -128,10 +128,6 @@ def main():
     
     if all(results):
         print("\n🎉 Integração OSRM funcionando perfeitamente!")
-        print("\n💡 Próximos passos:")
-        print("   1. Executar servidor: python main.py")
-        print("   2. Testar endpoints: python test_integration.py")
-        print("   3. Integrar com ESP32")
     else:
         print("\n⚠️ Alguns testes falharam. Verifique os erros acima.")
     

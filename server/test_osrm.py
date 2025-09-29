@@ -144,12 +144,6 @@ def main():
     test_osrm_direct()
     
     print("\n✅ Testes concluídos!")
-    print("\n💡 Vantagens do OSRM:")
-    print("   - Cálculo baseado em rotas reais")
-    print("   - Considera vias, semáforos, curvas")
-    print("   - Muito mais preciso que distância em linha reta")
-    print("   - Gratuito e confiável")
-    print("   - Atualizado com dados do OpenStreetMap")
 
 if __name__ == "__main__":
     main()

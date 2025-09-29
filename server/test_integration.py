@@ -208,19 +208,6 @@ def main():
     
     print("\n" + "=" * 60)
     print("✅ Teste de integração concluído!")
-    
-    print("\n💡 Resumo da integração OSRM:")
-    print("   ✅ API configurada para usar OSRM")
-    print("   ✅ Fallback manual implementado")
-    print("   ✅ Configurações centralizadas")
-    print("   ✅ Logs e monitoramento")
-    print("   ✅ Testes automatizados")
-    
-    print("\n🚀 Próximos passos:")
-    print("   1. Testar com ESP32 real")
-    print("   2. Implementar API de imagens")
-    print("   3. Integrar YOLO para ocupação")
-    print("   4. Conectar frontend")
 
 if __name__ == "__main__":
     main()
