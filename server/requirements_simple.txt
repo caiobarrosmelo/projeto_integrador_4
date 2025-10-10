@@ -1,0 +1,25 @@
+# Sistema Simplificado de Monitoramento IoT para Ônibus
+# Dependências essenciais para o schema reduzido
+
+# Framework web
+Flask==2.3.3
+Flask-CORS==4.0.0
+
+# Banco de dados
+psycopg2-binary==2.9.7
+
+# Processamento de imagens e ML
+Pillow==10.0.1
+opencv-python==4.8.1.78
+numpy==1.24.3
+
+# YOLO (opcional - para análise de ocupação)
+ultralytics==8.0.196
+
+# Utilitários
+requests==2.31.0
+python-dateutil==2.8.2
+
+# Desenvolvimento e testes
+pytest==7.4.2
+pytest-flask==1.2.0
