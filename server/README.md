@@ -1,70 +1,118 @@
-# Servidor de Monitoramento IoT para Ônibus
+# 🖥️ Backend - Servidor Flask
 
-API backend para recebimento de dados GPS do ESP32 e cálculo de ETA em tempo real, baseado nos requisitos do Projeto Integrador do 4º semestre de ADS.
+API backend para recebimento de dados GPS do ESP32 e cálculo de ETA em tempo real.
 
-## 🚀 Funcionalidades
+## 📋 Índice
 
-- **Recebimento de dados GPS**: Endpoint para receber localização do ESP32 via GPRS
-- **Cálculo de ETA inteligente**: Algoritmo baseado em histórico de velocidade e padrões de tráfego
-- **Aprendizado de padrões de atraso**: ML que aprende padrões de atraso por linha e horário
-- **Sistema de confiança**: Avalia a precisão das previsões (0-95%)
-- **Intervalos adaptativos**: Ajusta frequência de requisições baseado no tráfego
-- **Histórico de localizações**: Consulta de dados históricos por linha
-- **Destinos dinâmicos**: Sistema de paradas e terminais configuráveis
+- [Início Rápido](#-início-rápido)
+- [Estrutura](#-estrutura)
+- [Configuração](#-configuração)
+- [APIs](#-apis)
+- [Banco de Dados](#-banco-de-dados)
+- [Machine Learning](#-machine-learning)
 
-## 📋 Pré-requisitos
+---
 
-- Python 3.8+
-- PostgreSQL 12+
-- Dependências Python (ver `requirements.txt`)
-
-## 🛠️ Instalação
-
-1. **Instale as dependências**:
-```bash
-pip install -r requirements.txt
-```
-
-2. **Configure o banco PostgreSQL**:
-```sql
--- Execute o script de criação das tabelas
-\i db/create_tables.sql
-```
-
-3. **Configure as variáveis de ambiente** (opcional):
-```bash
-export DB_HOST=localhost
-export DB_NAME=bus_monitoring
-export DB_USER=postgres
-export DB_PASSWORD=sua_senha
-export API_PORT=3000
-```
-
-## 🏃‍♂️ Executando o Servidor
+## ⚡ Início Rápido
 
 ```bash
-# Desenvolvimento
+# 1. Instalar dependências
+pip install -r requirements_simple.txt
+
+# 2. Executar servidor
 python main.py
 
-# Produção (com gunicorn)
-gunicorn -w 4 -b 0.0.0.0:3000 main:app
+# 3. Testar
+curl http://localhost:3000/health
 ```
 
-O servidor estará disponível em: `http://localhost:3000`
+---
 
-## 📡 Endpoints da API
+## 📁 Estrutura
 
-### 1. Informações do Projeto
-```http
-GET /
+```
+server/
+├── main.py                    # ⭐ Entry point - inicia o servidor
+├── config_simple.py           # Configurações centralizadas
+├── env.example                 # Template de variáveis de ambiente
+│
+├── api/                       # Endpoints HTTP
+│   ├── dashboard_api.py       # API do dashboard (frontend)
+│   ├── simple_location_api.py # API de localização GPS
+│   ├── simple_image_api.py    # API de análise de imagens
+│   ├── simple_integrated_api.py # API integrada (GPS + Imagem)
+│   └── utils.py               # Utilitários compartilhados
+│
+├── database/                  # Acesso a dados
+│   └── simple_connection.py   # Conexão e repositórios
+│
+├── ml/                        # Machine Learning
+│   ├── occupancy_predictor.py # Predição de ocupação (YOLO)
+│   └── eta_confidence.py      # Cálculo de confiança de ETA
+│
+└── db/                        # Scripts SQL
+    └── create_tables.sql      # Schema do banco de dados
 ```
 
-### 2. Health Check
+---
+
+## ⚙️ Configuração
+
+### Variáveis de Ambiente
+
+Copie `env.example` para `.env`:
+
+```bash
+cp env.example .env
+```
+
+Edite `.env` com suas configurações:
+
+```env
+# Banco de Dados (Opcional)
+DB_HOST=localhost
+DB_NAME=bus_monitoring
+DB_USER=postgres
+DB_PASSWORD=sua_senha
+DB_PORT=5432
+
+# API
+API_HOST=0.0.0.0
+API_PORT=3000
+DEBUG=True
+```
+
+### Configuração no Código
+
+Todas as configurações estão em `config_simple.py`:
+
+- `DATABASE_CONFIG` - Configurações do PostgreSQL
+- `API_CONFIG` - Configurações do servidor Flask
+- `ETA_CONFIG` - Configurações de cálculo de ETA
+- `ML_CONFIG` - Configurações de Machine Learning
+- `CORS_CONFIG` - Configurações de CORS
+
+---
+
+## 🔌 APIs
+
+### Health Check
+
 ```http
 GET /health
 ```
 
-### 3. Receber Localização (ESP32)
+**Resposta:**
+```json
+{
+  "status": "healthy",
+  "service": "bus-monitoring-api",
+  "version": "1.0.0"
+}
+```
+
+### Receber Localização
+
 ```http
 POST /api/location
 Content-Type: application/json
@@ -73,187 +121,182 @@ Content-Type: application/json
   "bus_line": "L1",
   "latitude": -8.0630,
   "longitude": -34.8710,
-  "timestamp": "2024-01-01T10:00:00Z"
+  "timestamp": "2024-01-15T10:30:00Z"
 }
 ```
 
-**Resposta**:
-```json
+### Analisar Imagem
+
+```http
+POST /api/image/analyze
+Content-Type: application/json
+
 {
-  "status": "success",
-  "location_id": 123,
-  "destination": {
-    "id": "terminal_central",
-    "name": "Terminal Central",
-    "latitude": -8.0630,
-    "longitude": -34.8710,
-    "type": "terminal",
-    "distance_km": 0.5
-  },
-  "eta": {
-    "eta_minutes": 15.5,
-    "estimated_arrival": "2024-01-01T10:15:30Z",
-    "distance_km": 5.2,
-    "avg_speed_kmh": 20.1,
-    "adjusted_speed_kmh": 18.5,
-    "confidence_percent": 85.3,
-    "traffic_factor": 0.8,
-    "delay_factor": 0.95
-  },
-  "adaptive_interval_seconds": 25,
-  "message": "Localização recebida e ETA calculado"
+  "bus_line": "L1",
+  "image_data": "data:image/jpeg;base64,..."
 }
 ```
 
-### 4. Histórico de Localizações
+### API Integrada (GPS + Imagem)
+
 ```http
-GET /api/location/history/L1?limit=50&hours=24
-```
+POST /api/location-image
+Content-Type: application/json
 
-### 5. Destinos Disponíveis
-```http
-GET /api/location/destinations
-```
-
-## 🧮 Algoritmo de ETA com OSRM
-
-O sistema calcula ETA usando **OSRM (Open Source Routing Machine)** para máxima precisão:
-
-1. **OSRM**: Roteamento baseado em vias reais do OpenStreetMap
-2. **Distância real**: Considera vias, semáforos, curvas (não linha reta)
-3. **Fator de tráfego**: Ajuste por horário do dia
-4. **Aprendizado de atraso**: ML que aprende padrões históricos de atraso
-5. **Fallback manual**: Cálculo manual se OSRM falhar
-6. **Confiança**: 90% (OSRM) ou 60% (fallback)
-
-### Fatores de Tráfego (Recife)
-- **7h-9h**: 0.6 (pico manhã)
-- **12h-14h**: 0.8 (almoço)
-- **17h-19h**: 0.5 (pico tarde)
-- **19h-23h**: 1.1 (noite)
-- **Outros**: 1.0 (normal)
-
-### OSRM (Open Source Routing Machine)
-- **Servidor**: `http://router.project-osrm.org` (público e gratuito)
-- **Precisão**: Considera vias reais, semáforos, curvas
-- **Performance**: Resposta em ~100ms
-- **Confiabilidade**: 90% de confiança nas previsões
-- **Fallback**: Cálculo manual se OSRM falhar
-
-### Aprendizado de Padrões de Atraso
-- Analisa previsões vs chegadas reais dos últimos 7 dias
-- Aprende padrões específicos por linha e horário
-- Ajusta velocidade baseado em atrasos históricos
-- Melhora precisão ao longo do tempo
-
-## 🧪 Testando a API
-
-### Teste Completo de Integração OSRM
-```bash
-python test_integration.py
-```
-
-### Teste Simples OSRM
-```bash
-python test_simple.py
-```
-
-### Teste Básico
-```bash
-python test_api.py
-```
-
-### Executar Servidor
-```bash
-python main.py  # Agora usa receive_location_osrm.py
-```
-
-### Endpoint para ESP32 (mesmo formato)
-```http
-POST /api/location
 {
   "bus_line": "L1",
   "latitude": -8.0630,
-  "longitude": -34.8710
+  "longitude": -34.8710,
+  "image_data": "data:image/jpeg;base64,..."
 }
 ```
-O script irá:
-- Testar health check
-- Verificar informações do projeto
-- Enviar dados simulados do ESP32
-- Verificar destinos disponíveis
-- Simular movimento do ônibus
 
-## 📊 Estrutura do Banco
+### Dashboard APIs
 
-### Tabelas Principais
-- `bus_location`: Localizações GPS
-- `bus_image`: Imagens capturadas (para YOLO)
-- `prediction_confidence`: Previsões de ETA com confiança
-- `request_interval`: Intervalos adaptativos
+```http
+GET /api/dashboard/data        # Dados completos
+GET /api/dashboard/buses       # Ônibus ativos
+GET /api/dashboard/occupancy   # Dados de ocupação
+GET /api/dashboard/metrics     # Métricas do sistema
+```
 
-## 🔧 Configuração
+---
 
-Edite `config.py` para ajustar:
-- Coordenadas de destinos em Recife
-- Fatores de tráfego por horário
-- Configurações de ETA e ML
-- Parâmetros do banco
+## 🗄️ Banco de Dados
+
+### Schema
+
+O banco usa 4 tabelas principais:
+
+1. **bus_location** - Localizações GPS
+2. **bus_image** - Imagens capturadas
+3. **bus_eta** - Previsões de ETA
+4. **bus_interval** - Intervalos adaptativos
+
+### Setup
+
+```bash
+# 1. Criar banco
+createdb bus_monitoring
+
+# 2. Executar schema
+psql -d bus_monitoring -f db/create_tables.sql
+```
+
+### Modo Fallback
+
+Se o banco não estiver disponível:
+- Sistema continua funcionando
+- Usa dados simulados
+- Logs indicam "Modo Fallback"
+
+---
+
+## 🤖 Machine Learning
+
+### Ocupação (YOLO)
+
+O sistema detecta pessoas em imagens usando YOLO:
+
+```python
+from ml.occupancy_predictor import predict_bus_occupancy
+
+result = predict_bus_occupancy(image_data)
+# Retorna: level (0-4), person_count, confidence
+```
+
+### ETA Confidence
+
+Calcula confiança das previsões de ETA:
+
+```python
+from ml.eta_confidence import calculate_eta_confidence
+
+confidence = calculate_eta_confidence(
+    distance_km=5.2,
+    speed_kmh=25.0,
+    occupancy_level=2
+)
+```
+
+---
+
+## 🚀 Executando
+
+### Desenvolvimento
+
+```bash
+python main.py
+```
+
+### Produção (com Gunicorn)
+
+```bash
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:3000 main:app
+```
+
+---
+
+## 🧪 Testes
+
+```bash
+# Testar APIs
+python test_simple_system.py
+
+# Testar integração
+python test_integration.py
+```
+
+---
 
 ## 📝 Logs
 
-Logs são salvos em:
-- Console (desenvolvimento)
-- Arquivo `server.log` (produção)
+Logs são exibidos no console. Para salvar em arquivo:
 
-Níveis: DEBUG, INFO, WARNING, ERROR
-
-## 🚨 Troubleshooting
-
-### Erro de Conexão com Banco
-```bash
-# Verifique se PostgreSQL está rodando
-sudo systemctl status postgresql
-
-# Teste conexão
-psql -h localhost -U postgres -d bus_monitoring
+```python
+# Em config_simple.py
+LOGGING_CONFIG = {
+    'level': 'INFO',
+    'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    'file': 'server.log'  # Salvar em arquivo
+}
 ```
 
-### Porta em Uso
+---
+
+## 🔧 Troubleshooting
+
+### Erro: "Module not found"
+
 ```bash
-# Mude a porta no config.py ou use variável de ambiente
-export API_PORT=3001
+pip install -r requirements_simple.txt
 ```
 
-### Dependências
-```bash
-# Reinstale dependências
-pip install -r requirements.txt --force-reinstall
+### Erro: "Port 3000 already in use"
+
+Mude a porta em `config_simple.py`:
+```python
+API_CONFIG = {
+    'port': 5000  # Mudar porta
+}
 ```
 
-## 🔄 Próximos Passos
+### Erro: "Database connection failed"
 
-1. ✅ **Implementar API de imagens** (`receive_image.py`)
-2. ✅ **Integrar YOLO** para detecção de ocupação
-3. ✅ **Sistema de paradas dinâmicas**
-4. ✅ **Cache Redis** para performance
-5. ✅ **Monitoramento com Prometheus**
+O sistema funciona sem banco! Se quiser usar:
+1. Verifique se PostgreSQL está rodando
+2. Verifique credenciais em `.env`
+3. Execute `create_tables.sql`
 
-## 📞 Suporte
+---
 
-Para dúvidas ou problemas, verifique:
-1. Logs do servidor
-2. Status do banco de dados
-3. Conectividade de rede
-4. Configurações de ambiente
+## 📚 Mais Informações
 
-## 🎯 Contexto do Projeto
+- **Guia Completo**: `../GUIA_EXECUCAO_LOCAL.md`
+- **Integração**: `../INTEGRATION_GUIDE.md`
+- **Arquitetura**: `../ARQUITETURA.md`
 
-Este servidor faz parte do **Projeto Integrador do 4º semestre de ADS** e implementa:
+---
 
-- **IoT**: Coleta de dados via ESP32 + GPS + Câmera
-- **Cloud Computing**: Processamento na nuvem
-- **Machine Learning**: YOLO para detecção + aprendizado de padrões
-- **Banco de Dados**: PostgreSQL com estrutura modular
-- **APIs REST**: Integração com frontend e ESP32
-- **Tempo Real**: Cálculo de ETA e intervalos adaptativos
+**Pronto para usar!** 🚀
