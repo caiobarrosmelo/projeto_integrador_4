@@ -30,11 +30,19 @@ Guia completo de toda a documentação disponível no projeto.
 | **client/README.md** | Frontend Next.js | Trabalhar no frontend |
 | **hardware/README.md** | ESP32 | Trabalhar com hardware |
 
+### 📈 Melhorias
+
+| Documento | Descrição | Quando Usar |
+|-----------|-----------|-------------|
+| **SUGESTOES_MELHORIAS.md** | Lista de melhorias | Planejar melhorias |
+| **IMPLEMENTACAO_MELHORIAS.md** | Como implementar | Executar melhorias |
+
 ### 🔧 Execução
 
 | Documento | Descrição | Quando Usar |
 |-----------|-----------|-------------|
 | **GUIA_EXECUCAO_LOCAL.md** | Guia completo | Setup detalhado |
+| **CORRECOES_INTEGRACAO.md** | Correções feitas | Entender mudanças |
 
 ---
 
@@ -93,9 +101,13 @@ ONBOARDING.md → Problemas Comuns
 - `README.md` - Documento principal
 - `ONBOARDING.md` - Guia de primeiro uso
 - `ARQUITETURA.md` - Arquitetura do sistema
+- `README_EXECUCAO.md` - Resumo de execução
 - `GUIA_EXECUCAO_LOCAL.md` - Guia completo
 - `INTEGRATION_GUIDE.md` - Guia de integração
 - `DOCUMENTACAO.md` - Este arquivo
+- `SUGESTOES_MELHORIAS.md` - Melhorias sugeridas
+- `IMPLEMENTACAO_MELHORIAS.md` - Como implementar
+- `CORRECOES_INTEGRACAO.md` - Correções feitas
 
 ### server/
 
