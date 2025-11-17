@@ -14,11 +14,11 @@ app.use(bodyParser.json({ limit: '10mb' }));
 // CONFIGURAÇÃO DO BANCO DE DADOS POSTGRESQL
 // ========================================================
 const pool = new Pool({
-  user: 'seu_usuario',
+  user: 'bus_app',
   host: 'localhost',
   database: 'bus_monitoring',
-  password: 'sua_senha',
-  port: 5432,
+  password: 'test',
+  port: 5433,
 });
 
 // Teste de conexão
@@ -321,3 +321,77 @@ process.on('SIGINT', async () => {
   await pool.end();
   process.exit(0);
 });
+
+
+// 1. Listar todas as linhas
+app.get('/lines', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT DISTINCT bus_line 
+      FROM bus_location 
+      ORDER BY bus_line;
+    `);
+
+    res.json(result.rows.map(r => r.bus_line));
+  } catch (error) {
+    console.error('Erro ao buscar linhas:', error);
+    res.status(500).json({ error: 'Erro ao buscar linhas' });
+  }
+});
+
+// 2. Últimas localizações (um registro por linha)
+app.get('/locations/latest', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT DISTINCT ON (bus_line)
+        id, bus_line, timestamp_location, latitude, longitude
+      FROM bus_location
+      ORDER BY bus_line, timestamp_location DESC;
+    `);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erro ao buscar últimas localizações:', error);
+    res.status(500).json({ error: 'Erro ao buscar últimas localizações' });
+  }
+});
+
+// 3. Histórico de uma linha específica
+
+app.get('/locations/by-line/:line', async (req, res) => {
+  try {
+    const line = decodeURIComponent(req.params.line);
+
+    const result = await pool.query(`
+      SELECT *
+      FROM bus_location
+      WHERE bus_line = $1
+      ORDER BY timestamp_location DESC
+      LIMIT 200;
+    `, [line]);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erro ao buscar histórico da linha:', error);
+    res.status(500).json({ error: 'Erro ao buscar histórico da linha' });
+  }
+});
+
+// 4. Pingar apenas ônibus ativos (últimos 5 min)
+
+app.get('/bus/active', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT DISTINCT bus_line
+      FROM bus_location
+      WHERE timestamp_location >= NOW() - INTERVAL '5 minutes'
+      ORDER BY bus_line;
+    `);
+
+    res.json(result.rows.map(r => r.bus_line));
+  } catch (error) {
+    console.error('Erro ao buscar ônibus ativos:', error);
+    res.status(500).json({ error: 'Erro ao buscar ônibus ativos' });
+  }
+});
+

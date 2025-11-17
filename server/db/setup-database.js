@@ -10,11 +10,14 @@ const path = require('path');
 
 // Configuração do banco
 const config = {
-  user: process.env.DB_USER || 'postgres',
+  user: process.env.DB_USER || 'bus_app',
   host: process.env.DB_HOST || 'localhost',
-  password: process.env.DB_PASSWORD || 'sua_senha',
-  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_NAME || 'bus_monitoring',
+  password: process.env.DB_PASSWORD || 'test',
+  port: process.env.DB_PORT || 5433,
 };
+
+module.exports = pool;
 
 // SQL para criar o banco de dados
 const CREATE_DATABASE = `
@@ -27,6 +30,7 @@ WITH ENCODING = 'UTF8'
 
 // SQL para criar as tabelas
 const CREATE_TABLES = `
+
 -- Tabela: bus_location
 CREATE TABLE IF NOT EXISTS bus_location (
     id SERIAL PRIMARY KEY,
@@ -109,6 +113,7 @@ SELECT
     (SELECT COUNT(DISTINCT bus_line) FROM bus_location) as linhas_ativas,
     (SELECT pg_size_pretty(pg_database_size(current_database()))) as tamanho_banco,
     (SELECT MAX(timestamp_location) FROM bus_location) as ultima_atualizacao;
+
 `;
 
 // Função principal
@@ -117,7 +122,7 @@ async function setupDatabase() {
   console.log('🚀 Setup do Banco de Dados');
   console.log('========================================\n');
 
-  // Conecta ao PostgreSQL (sem especificar banco)
+  // Conecta ao PostgreSQL (sem banco)
   const clientDefault = new Client(config);
 
   try {
@@ -139,7 +144,7 @@ async function setupDatabase() {
 
     await clientDefault.end();
 
-    // Conecta ao banco específico para criar tabelas
+    // Conecta ao banco para criar tabelas
     const clientBus = new Client({
       ...config,
       database: 'bus_monitoring'
@@ -152,6 +157,44 @@ async function setupDatabase() {
     console.log('🔨 Criando estrutura do banco...');
     await clientBus.query(CREATE_TABLES);
     console.log('✅ Tabelas criadas com sucesso!\n');
+
+    // ===============================================
+    // Povoa a tabela bus_location com dados simulados
+    // ===============================================
+    console.log('🚌 Inserindo dados simulados das linhas de ônibus...');
+
+    const linhas = [
+      '204 - Barro/Cid. Univ.',
+      '207 - Barro/Macaxeira CU',
+      '245 - Camaragibe/Macaxeira',
+      '424 - CDU/TI TIP',
+      '860 - Xambá/UFPE',
+      '040 - CDU/Caxangá/Boa Viagem',
+      '870 - Abreu e Lima/UFPE',
+      '880 - PE-15/UFPE'
+    ];
+
+    const latBase = -8.0555;
+    const lonBase = -34.9516;
+
+    for (let i = 0; i < 200; i++) {
+      const linha = linhas[Math.floor(Math.random() * linhas.length)];
+
+      const lat = latBase + (Math.random() - 0.5) / 200;
+      const lon = lonBase + (Math.random() - 0.5) / 200;
+
+      const timestamp = new Date(Date.now() - Math.random() * 2 * 3600 * 1000);
+
+      await clientBus.query(
+        `
+        INSERT INTO bus_location (bus_line, timestamp_location, latitude, longitude)
+        VALUES ($1, $2, $3, $4)
+        `,
+        [linha, timestamp, lat, lon]
+      );
+    }
+
+    console.log('✅ Dados simulados inseridos em bus_location!\n');
 
     // Verifica estrutura criada
     const tables = await clientBus.query(`
