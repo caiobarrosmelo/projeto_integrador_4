@@ -255,29 +255,29 @@ class ApiClient {
 export const apiClient = new ApiClient();
 
 // Hooks personalizados para React
-export const useDashboardData = (refresh: boolean = false) => {
+export const useDashboardData = () => {
   const [data, setData] = React.useState<DashboardData | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
+  const fetchData = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await apiClient.getDashboardData();
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await apiClient.getDashboardData(refresh);
-        setData(result);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro desconhecido');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-  }, [refresh]);
+  }, [fetchData]);
 
-  return { data, loading, error, refetch: () => fetchData() };
+  return { data, loading, error, refetch: fetchData };
 };
 
 export const useCurrentBuses = (lineCode?: string, minutes: number = 5) => {
@@ -285,28 +285,26 @@ export const useCurrentBuses = (lineCode?: string, minutes: number = 5) => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await apiClient.getCurrentBuses(lineCode, minutes);
-        setData(result.buses);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro desconhecido');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-    
-    // Atualiza a cada 30 segundos
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
+  const fetchData = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await apiClient.getCurrentBuses(lineCode, minutes);
+      setData(result.buses);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+    } finally {
+      setLoading(false);
+    }
   }, [lineCode, minutes]);
 
-  return { data, loading, error, refetch: () => fetchData() };
+  React.useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
+
+  return { data, loading, error, refetch: fetchData };
 };
 
 export const useOccupancyData = (lineCode?: string, hours: number = 24) => {
@@ -314,24 +312,24 @@ export const useOccupancyData = (lineCode?: string, hours: number = 24) => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await apiClient.getOccupancyData(lineCode, hours);
-        setData(result.occupancy_data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro desconhecido');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+  const fetchData = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await apiClient.getOccupancyData(lineCode, hours);
+      setData(result.occupancy_data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+    } finally {
+      setLoading(false);
+    }
   }, [lineCode, hours]);
 
-  return { data, loading, error, refetch: () => fetchData() };
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, loading, error, refetch: fetchData };
 };
 
 export const useSystemMetrics = () => {
@@ -339,28 +337,26 @@ export const useSystemMetrics = () => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await apiClient.getSystemMetrics();
-        setData(result.system_metrics);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro desconhecido');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-    
-    // Atualiza a cada 60 segundos
-    const interval = setInterval(fetchData, 60000);
-    return () => clearInterval(interval);
+  const fetchData = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await apiClient.getSystemMetrics();
+      setData(result.system_metrics);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { data, loading, error, refetch: () => fetchData() };
+  React.useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 60000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
+
+  return { data, loading, error, refetch: fetchData };
 };
 
 // Utilitários
