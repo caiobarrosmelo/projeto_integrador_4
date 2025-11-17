@@ -59,7 +59,7 @@ O sistema funciona **sem banco de dados** usando dados simulados. Se quiser usar
 
 **Windows:**
 - Baixe do site oficial: https://www.postgresql.org/download/windows/
-- Durante a instalação, anote a senha do usuário `postgres`
+- Durante a instalação, anote a senha do usuário `test`
 
 **Linux (Ubuntu/Debian):**
 ```bash
@@ -292,7 +292,7 @@ npm run dev
 |---------|-------|-----|
 | Backend (Flask) | 3000 | http://localhost:3000 |
 | Frontend (Next.js) | 3001 | http://localhost:3001 |
-| PostgreSQL | 5432 | localhost:5432 |
+| PostgreSQL | 5433 | localhost:5433 |
 
 ## 🎯 Comandos Rápidos
 
@@ -300,12 +300,12 @@ npm run dev
 
 **Terminal 1:**
 ```bash
-cd server && python main.py
+cd server; python main.py
 ```
 
 **Terminal 2:**
 ```bash
-cd client && npm run dev
+cd client; npm run dev
 ```
 
 ### Parar Serviços

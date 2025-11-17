@@ -6,13 +6,13 @@ Schema Reduzido - Baseado nos requisitos do projeto integrador
 import os
 from typing import Dict, Any
 
-# Configurações do banco de dados PostgreSQL (opcional)
+# Configurações do banco de dados PostgreSQL
 DATABASE_CONFIG: Dict[str, Any] = {
     'host': os.getenv('DB_HOST', 'localhost'),
     'database': os.getenv('DB_NAME', 'bus_monitoring'),
-    'user': os.getenv('DB_USER', 'postgres'),
-    'password': os.getenv('DB_PASSWORD', 'your_password'),
-    'port': int(os.getenv('DB_PORT', '5432'))
+    'user': os.getenv('DB_USER', 'bus_app'),
+    'password': os.getenv('DB_PASSWORD', 'test'),
+    'port': int(os.getenv('DB_PORT', '5433'))
 }
 
 # Configurações da API

@@ -136,10 +136,10 @@ def get_dashboard_data():
         if db_connected:
             bus_repo = get_simple_bus_repository()
             if bus_repo:
-                locations = bus_repo.get_current_locations(minutes=5)
+                location = bus_repo.get_current_location(minutes=5)
                 # Agrupa por linha (pega a mais recente de cada linha)
                 buses_by_line = {}
-                for loc in locations:
+                for loc in location:
                     line = loc.get('bus_line', '')
                     if line not in buses_by_line:
                         buses_by_line[line] = loc
@@ -225,10 +225,10 @@ def get_current_buses():
         if db_manager and db_manager.test_connection():
             bus_repo = get_simple_bus_repository()
             if bus_repo:
-                locations = bus_repo.get_current_locations(bus_line=line_code, minutes=minutes)
+                location = bus_repo.get_current_location(bus_line=line_code, minutes=minutes)
                 # Agrupa por linha
                 buses_by_line = {}
-                for loc in locations:
+                for loc in location:
                     line = loc.get('bus_line', '')
                     if line not in buses_by_line:
                         buses_by_line[line] = loc
