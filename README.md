@@ -298,20 +298,27 @@ CREATE DATABASE bus_monitoring;
 \q
 ```
 
-### 3. Executar Schema
+### 3. Criar Schema e Dados Iniciais
 
 ```bash
+# Opção A - Executar script SQL diretamente
 psql -U postgres -d bus_monitoring -f server/db/create_tables.sql
+
+# Opção B - Usar script Node para criar e popular o banco
+cd server/db
+npm install
+npm run setup
 ```
 
-### 4. Configurar .env
+### 4. Configurar .env do Backend
 
 Edite `server/.env` com suas credenciais:
 ```env
 DB_HOST=localhost
 DB_NAME=bus_monitoring
 DB_USER=postgres
-DB_PASSWORD=sua_senha
+DB_PASSWORD=postgres
+DB_PORT=5432
 ```
 
 ---
@@ -363,11 +370,12 @@ npm install
 
 ## 📊 Portas e URLs
 
-| Serviço | Porta | URL |
-|---------|-------|-----|
-| Backend (Flask) | 3000 | http://localhost:3000 |
-| Frontend (Next.js) | 3001 | http://localhost:3001 |
-| PostgreSQL | 5432 | localhost:5432 |
+| Serviço                | Porta | URL                    |
+|------------------------|-------|------------------------|
+| Backend (Flask)        | 3000  | http://localhost:3000  |
+| Frontend (Next.js)     | 3001  | http://localhost:3001  |
+| Pipeline IoT (Node)    | 4000  | http://localhost:4000  |
+| PostgreSQL             | 5432  | localhost:5432         |
 
 ---
 

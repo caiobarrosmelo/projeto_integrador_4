@@ -139,14 +139,16 @@ def create_app():
     return app
 
 if __name__ == '__main__':
+    import os  # garante que o módulo os esteja disponível, caso precise em create_app ou conexões
+
     logger.info("Iniciando servidor de monitoramento de ônibus IoT...")
     logger.info("Projeto Integrador - 4º Semestre ADS")
     
     app = create_app()
     
-    # Inicia o servidor
+    # Inicia o servidor Flask usando a configuração definida em API_CONFIG
     app.run(
-        host=API_CONFIG['host'],
-        port=API_CONFIG['port'],
-        debug=API_CONFIG['debug']
+        host=API_CONFIG['host'],  # por exemplo: "127.0.0.1"
+        port=API_CONFIG['port'],  # por exemplo: 3000
+        debug=API_CONFIG['debug'] # por exemplo: True
     )

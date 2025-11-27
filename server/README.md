@@ -176,11 +176,16 @@ O banco usa 4 tabelas principais:
 ### Setup
 
 ```bash
-# 1. Criar banco
+# 1. Criar banco (opcional, se não usar o script Node)
 createdb bus_monitoring
 
-# 2. Executar schema
+# 2. Executar schema (SQL puro)
 psql -d bus_monitoring -f db/create_tables.sql
+
+# OU, de forma automatizada (criar banco, schema e seed)
+cd db
+npm install
+npm run setup
 ```
 
 ### Modo Fallback

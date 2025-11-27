@@ -7,19 +7,30 @@ import os
 from typing import Dict, Any
 
 # Configurações do banco de dados PostgreSQL
+# Observação:
+# - Os valores padrão abaixo são pensados para um ambiente local simples.
+# - Em produção (ou em ambientes de avaliação) SEMPRE configure as variáveis
+#   de ambiente: DB_HOST, DB_NAME, DB_USER, DB_PASSWORD e DB_PORT.
 DATABASE_CONFIG: Dict[str, Any] = {
     'host': os.getenv('DB_HOST', 'localhost'),
     'database': os.getenv('DB_NAME', 'bus_monitoring'),
-    'user': os.getenv('DB_USER', 'bus_app'),
-    'password': os.getenv('DB_PASSWORD', 'test'),
-    'port': int(os.getenv('DB_PORT', '5433'))
+    # Por padrão usamos o usuário postgres em desenvolvimento local.
+    # Se você criou outro usuário (ex: bus_user), ajuste via variável de ambiente.
+    'user': os.getenv('DB_USER', 'postgres'),
+    'password': os.getenv('DB_PASSWORD', 'MinhaSenhaReal123'),
+    # Porta padrão do PostgreSQL (local). Pode ser sobrescrita via DB_PORT.
+    'port': int(os.getenv('DB_PORT', '5432')),
 }
 
 # Configurações da API
+# Padrão: Flask em http://0.0.0.0:3000
+# O frontend Next.js, em desenvolvimento, roda em http://localhost:3001.
+# Se você alterar a porta aqui, lembre-se de atualizar também NEXT_PUBLIC_API_URL
+# no frontend (client/.env.local).
 API_CONFIG: Dict[str, Any] = {
     'host': os.getenv('API_HOST', '0.0.0.0'),
     'port': int(os.getenv('API_PORT', '3000')),
-    'debug': os.getenv('API_DEBUG', 'True').lower() == 'true'
+    'debug': os.getenv('API_DEBUG', 'True').lower() == 'true',
 }
 
 # Configurações de ETA simplificado

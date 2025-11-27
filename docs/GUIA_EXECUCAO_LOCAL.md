@@ -97,33 +97,47 @@ GRANT ALL PRIVILEGES ON DATABASE bus_monitoring TO bus_user;
 \q
 ```
 
-#### 4.3. Executar Schema
+#### 4.3. Executar Schema e Popular Dados Iniciais
 
 ```bash
-# Execute o script SQL
+# Opção A - Executar script SQL diretamente
 psql -U postgres -d bus_monitoring -f server/db/create_tables.sql
 
 # OU se usar usuário específico:
 psql -U bus_user -d bus_monitoring -f server/db/create_tables.sql
+
+# Opção B - Usar script Node de setup + seed (recomendado)
+cd server/db
+npm install
+npm run setup
 ```
+
+O script `npm run setup`:
+- Cria o banco `bus_monitoring` (se ainda não existir)
+- Cria todas as tabelas/índices/views necessárias
+- Insere ~200 registros simulados em `bus_location` com timestamps recentes
 
 #### 4.4. Configurar Variáveis de Ambiente (Opcional)
 
 Crie um arquivo `.env` no diretório `server/` (ou configure no sistema):
 
 ```bash
-# Windows (PowerShell):
+# Windows (PowerShell): utilize as credenciais da sua máquina
 $env:DB_HOST="localhost"
 $env:DB_NAME="bus_monitoring"
 $env:DB_USER="postgres"
-$env:DB_PASSWORD="sua_senha"
+$env:DB_PASSWORD="postgres" 
+$env:DB_PORT="5432"
 $env:API_PORT="3000"
+
+após execute o comando 'npm start'
 
 # Linux/Mac:
 export DB_HOST=localhost
 export DB_NAME=bus_monitoring
 export DB_USER=postgres
-export DB_PASSWORD=sua_senha
+export DB_PASSWORD=postgres
+export DB_PORT=5432
 export API_PORT=3000
 ```
 
@@ -288,11 +302,12 @@ npm run dev
 
 ## 📊 Estrutura de Portas
 
-| Serviço | Porta | URL |
-|---------|-------|-----|
-| Backend (Flask) | 3000 | http://localhost:3000 |
-| Frontend (Next.js) | 3001 | http://localhost:3001 |
-| PostgreSQL | 5433 | localhost:5433 |
+| Serviço                | Porta | URL                    |
+|------------------------|-------|------------------------|
+| Backend (Flask)        | 3000  | http://localhost:3000  |
+| Frontend (Next.js)     | 3001  | http://localhost:3001  |
+| Pipeline IoT (Node)    | 4000  | http://localhost:4000  |
+| PostgreSQL             | 5432  | localhost:5432         |
 
 ## 🎯 Comandos Rápidos
 

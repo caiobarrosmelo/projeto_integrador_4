@@ -14,11 +14,12 @@ app.use(bodyParser.json({ limit: '10mb' }));
 // CONFIGURAÇÃO DO BANCO DE DADOS POSTGRESQL
 // ========================================================
 const pool = new Pool({
-  user: 'bus_app',
-  host: 'localhost',
-  database: 'bus_monitoring',
-  password: 'test',
-  port: 5433,
+  user: process.env.DB_USER || 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'bus_monitoring',
+  password: process.env.DB_PASSWORD || 'postgres',
+  // Usamos 5432 como padrão (porta oficial do PostgreSQL)
+  port: Number(process.env.DB_PORT) || 5432,
 });
 
 // Teste de conexão
@@ -307,7 +308,9 @@ app.get('/stats', async (req, res) => {
 // INICIALIZAÇÃO DO SERVIDOR
 // ========================================================
 
-const PORT = process.env.PORT || 3000;
+// Este servidor Node é usado apenas como pipeline IoT (ESP32) e
+// não deve conflitar com o backend Flask (porta 3000).
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀 Servidor IoT rodando na porta ${PORT}`);
   console.log(`📍 Endpoint principal: http://localhost:${PORT}/data`);

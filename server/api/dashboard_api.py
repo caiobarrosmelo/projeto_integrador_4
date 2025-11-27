@@ -134,12 +134,14 @@ def get_dashboard_data():
         # Obtém dados de ônibus
         buses = []
         if db_connected:
+            # Quando o banco está conectado, usamos SEMPRE os dados reais.
+            # Apenas se o banco estiver indisponível é que caímos em modo fallback.
             bus_repo = get_simple_bus_repository()
             if bus_repo:
-                location = bus_repo.get_current_location(minutes=5)
+                locations = bus_repo.get_current_locations(minutes=5)
                 # Agrupa por linha (pega a mais recente de cada linha)
                 buses_by_line = {}
-                for loc in location:
+                for loc in locations:
                     line = loc.get('bus_line', '')
                     if line not in buses_by_line:
                         buses_by_line[line] = loc
@@ -149,9 +151,8 @@ def get_dashboard_data():
                 
                 for loc in buses_by_line.values():
                     buses.append(format_bus_location(loc))
-        
-        # Se não há dados do banco, usa fallback
-        if not buses:
+        else:
+            # Sem conexão com banco → dados simulados (modo fallback)
             buses = get_fallback_buses()
         
         # Obtém estatísticas de ocupação
@@ -221,14 +222,15 @@ def get_current_buses():
         
         db_manager = get_simple_database_manager()
         buses = []
+        db_connected = db_manager is not None and db_manager.test_connection()
         
-        if db_manager and db_manager.test_connection():
+        if db_connected:
             bus_repo = get_simple_bus_repository()
             if bus_repo:
-                location = bus_repo.get_current_location(bus_line=line_code, minutes=minutes)
+                locations = bus_repo.get_current_locations(bus_line=line_code, minutes=minutes)
                 # Agrupa por linha
                 buses_by_line = {}
-                for loc in location:
+                for loc in locations:
                     line = loc.get('bus_line', '')
                     if line not in buses_by_line:
                         buses_by_line[line] = loc
@@ -238,8 +240,7 @@ def get_current_buses():
                 
                 for loc in buses_by_line.values():
                     buses.append(format_bus_location(loc))
-        
-        if not buses:
+        else:
             buses = get_fallback_buses()
             if line_code:
                 buses = [b for b in buses if b['line_code'] == line_code]

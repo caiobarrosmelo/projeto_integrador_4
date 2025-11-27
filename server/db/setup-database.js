@@ -1,7 +1,7 @@
 // ========================================================
 // Script de Setup Automático do Banco de Dados
 // ========================================================
-// Uso: node scripts/setup-database.js
+// Uso: node setup-database.js
 // ========================================================
 
 const { Client } = require('pg');
@@ -9,15 +9,20 @@ const fs = require('fs');
 const path = require('path');
 
 // Configuração do banco
+// Mantemos a mesma convenção do backend Flask:
+// - host: localhost
+// - database: postgres (para criar o banco bus_monitoring)
+// - user: postgres (por padrão em desenvolvimento)
+// Estes valores podem (e devem) ser sobrescritos via variáveis de ambiente
+// DB_HOST, DB_NAME, DB_USER, DB_PASSWORD e DB_PORT quando necessário.
 const config = {
-  user: process.env.DB_USER || 'bus_app',
+  user: process.env.DB_USER || 'postgres',
   host: process.env.DB_HOST || 'localhost',
   database: process.env.DB_NAME || 'bus_monitoring',
-  password: process.env.DB_PASSWORD || 'test',
-  port: process.env.DB_PORT || 5433,
+  password: process.env.DB_PASSWORD || 'MinhaSenhaReal123',
+  // Usamos 5432 como padrão (porta oficial do PostgreSQL)
+  port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
 };
-
-module.exports = pool;
 
 // SQL para criar o banco de dados
 const CREATE_DATABASE = `
@@ -165,7 +170,7 @@ async function setupDatabase() {
 
     const linhas = [
       '204 - Barro/Cid. Univ.',
-      '207 - Barro/Macaxeira CU',
+      '207 - Barro/Macaxeira CDU',
       '245 - Camaragibe/Macaxeira',
       '424 - CDU/TI TIP',
       '860 - Xambá/UFPE',

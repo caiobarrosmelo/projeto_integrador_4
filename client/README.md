@@ -59,10 +59,17 @@ client/
 Crie `.env.local` (opcional):
 
 ```env
+# URL do backend Flask
 NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
-**Padrão**: Se não configurado, usa `http://localhost:3000`
+**Padrão**: Se não configurado, usa `http://localhost:3000`.
+
+Se você alterar a porta do backend (por exemplo, para 5000), atualize aqui:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000
+```
 
 ### Configuração da API
 

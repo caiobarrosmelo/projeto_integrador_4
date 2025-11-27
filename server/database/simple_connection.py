@@ -7,6 +7,7 @@ Baseado nos requisitos do projeto IoT de monitoramento de ônibus
 import psycopg2
 import psycopg2.extras
 import logging
+import os
 from contextlib import contextmanager
 from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, timedelta
@@ -29,7 +30,15 @@ class SimpleDatabaseManager:
         self._connect()
     
     def _connect(self):
-        """Conecta ao banco de dados."""
+        """Conecta ao banco de dados.
+
+        Em alguns ambientes Windows / bancos inicializados com encoding LATIN1,
+        o psycopg2 pode falhar ao decodificar mensagens de erro como UTF‑8
+        (por exemplo, com caracteres 'ç', 'ã', etc.).
+
+        Para evitar o erro `'utf-8' codec can't decode byte 0xe7 ...`,
+        ajustamos explicitamente o client_encoding via options.
+        """
         try:
             self.connection = psycopg2.connect(
                 host=self.config['host'],
@@ -37,7 +46,10 @@ class SimpleDatabaseManager:
                 user=self.config['user'],
                 password=self.config['password'],
                 port=self.config['port'],
-                cursor_factory=psycopg2.extras.RealDictCursor
+                cursor_factory=psycopg2.extras.RealDictCursor,
+                # Permite sobrescrever via variável de ambiente, se necessário.
+                options=self.config.get('options') or
+                        os.getenv('PG_OPTIONS', '-c client_encoding=LATIN1'),
             )
             logger.info("Conexão com banco de dados estabelecida")
         except Exception as e:
