@@ -35,9 +35,9 @@ venv\Scripts\activate
 source venv/bin/activate
 
 # Instale as dependências
-pip install -r requirements_simple.txt
+pip install -r requirements.txt
 
-# OU se requirements_simple.txt não existir:
+# OU se requirements.txt não existir (fallback mínimo):
 pip install flask flask-cors psycopg2-binary
 ```
 
@@ -276,7 +276,7 @@ lsof -i :3000
 **Solução:**
 ```bash
 cd server
-pip install -r requirements_simple.txt
+pip install -r requirements.txt
 # OU
 pip install flask flask-cors psycopg2-binary
 ```
@@ -336,7 +336,7 @@ cd client; npm run dev
 
 - [ ] Python 3.8+ instalado
 - [ ] Node.js 18+ instalado
-- [ ] Dependências do backend instaladas (`pip install -r requirements_simple.txt`)
+- [ ] Dependências do backend instaladas (`pip install -r requirements.txt`)
 - [ ] Dependências do frontend instaladas (`npm install`)
 - [ ] Backend rodando em `http://localhost:3000`
 - [ ] Frontend rodando em `http://localhost:3001`

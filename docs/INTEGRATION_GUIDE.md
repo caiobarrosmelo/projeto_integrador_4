@@ -72,7 +72,7 @@ cd server
 pip install flask flask-cors opencv-python Pillow numpy requests
 
 # Instalar dependências completas (com YOLO)
-pip install -r requirements_ml.txt
+pip install -r requirements.txt
 
 # Configurar banco de dados (opcional)
 # 1. Instalar PostgreSQL
@@ -418,7 +418,7 @@ npm start
 FROM python:3.9
 COPY server/ /app
 WORKDIR /app
-RUN pip install -r requirements_ml.txt
+RUN pip install -r requirements.txt
 EXPOSE 3000
 CMD ["python", "main.py"]
 ```
@@ -429,7 +429,7 @@ CMD ["python", "main.py"]
 
 - [README_ML.md](server/README_ML.md) - Sistema de Machine Learning
 - [complete_schema.sql](server/db/complete_schema.sql) - Schema do banco
-- [requirements_ml.txt](server/requirements_ml.txt) - Dependências ML
+- [requirements.txt](server/requirements.txt) - Dependências Python (unificado)
 
 ### APIs
 

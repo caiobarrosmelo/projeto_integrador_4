@@ -17,7 +17,7 @@ API backend para recebimento de dados GPS do ESP32 e cálculo de ETA em tempo re
 
 ```bash
 # 1. Instalar dependências
-pip install -r requirements_simple.txt
+pip install -r requirements.txt
 
 # 2. Executar servidor
 python main.py
@@ -275,7 +275,7 @@ LOGGING_CONFIG = {
 ### Erro: "Module not found"
 
 ```bash
-pip install -r requirements_simple.txt
+pip install -r requirements.txt
 ```
 
 ### Erro: "Port 3000 already in use"

@@ -33,7 +33,7 @@ def check_dependencies():
         return True
     except ImportError as e:
         logger.error("Dependência não encontrada: %s", e)
-        logger.info("Execute: pip install -r requirements_simple.txt")
+        logger.info("Execute: pip install -r requirements.txt")
         return False
 
 def check_database_connection():

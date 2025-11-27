@@ -48,7 +48,7 @@ Este projeto é um sistema completo de monitoramento IoT que:
    ```bash
    # Backend
    cd server
-   pip install -r requirements_simple.txt
+   pip install -r requirements.txt
    
    # Frontend
    cd ../client
@@ -86,7 +86,7 @@ projeto_integrador_4/
 ├── 🖥️ server/                      # Backend (Flask/Python)
 │   ├── main.py                     # ⭐ Ponto de entrada principal
 │   ├── config_simple.py             # Configurações
-│   ├── requirements_simple.txt     # Dependências Python
+│   ├── requirements.txt          # Dependências Python (unificado)
 │   ├── env.example                  # Template de variáveis de ambiente
 │   │
 │   ├── api/                         # Endpoints da API
@@ -178,7 +178,7 @@ venv\Scripts\activate
 source venv/bin/activate
 
 # Instalar dependências
-pip install -r requirements_simple.txt
+pip install -r requirements.txt
 ```
 
 ### 3. Instalar Dependências do Frontend
@@ -344,7 +344,7 @@ lsof -i :3000
 **Backend:**
 ```bash
 cd server
-pip install -r requirements_simple.txt
+pip install -r requirements.txt
 ```
 
 **Frontend:**

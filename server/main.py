@@ -146,9 +146,19 @@ if __name__ == '__main__':
     
     app = create_app()
     
-    # Inicia o servidor Flask usando a configuração definida em API_CONFIG
+    # Render e outros serviços em nuvem usam a variável PORT automaticamente
+    # Em desenvolvimento local, usa a porta configurada em API_CONFIG
+    port = int(os.environ.get('PORT', API_CONFIG['port']))
+    host = os.environ.get('HOST', API_CONFIG['host'])
+    
+    # Em produção, sempre desabilita debug
+    debug_mode = API_CONFIG['debug'] if port == API_CONFIG['port'] else False
+    
+    logger.info(f"Servidor iniciando em {host}:{port} (debug={debug_mode})")
+    
+    # Inicia o servidor Flask
     app.run(
-        host=API_CONFIG['host'],  # por exemplo: "127.0.0.1"
-        port=API_CONFIG['port'],  # por exemplo: 3000
-        debug=API_CONFIG['debug'] # por exemplo: True
+        host=host,
+        port=port,
+        debug=debug_mode
     )

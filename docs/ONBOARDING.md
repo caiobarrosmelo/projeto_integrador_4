@@ -47,7 +47,7 @@ cd projeto_integrador_4-modelo-integrado2
 
 # 2. Instalar dependências do backend
 cd server
-pip install -r requirements_simple.txt
+pip install -r requirements.txt
 
 # 3. Instalar dependências do frontend
 cd ../client
@@ -180,7 +180,7 @@ Se todos os testes passaram, você está pronto para usar o sistema!
 **Solução:**
 ```bash
 cd server
-pip install -r requirements_simple.txt
+pip install -r requirements.txt
 ```
 
 ### Erro: "Port 3000 already in use"

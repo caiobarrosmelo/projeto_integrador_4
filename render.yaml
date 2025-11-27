@@ -1,0 +1,55 @@
+services:
+  # Backend Flask - API de Monitoramento
+  - type: web
+    name: bus-monitoring-api
+    env: python
+    rootDir: server
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:create_app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: API_DEBUG
+        value: False
+      - key: API_HOST
+        value: 0.0.0.0
+      # Variáveis de banco de dados (configure manualmente no painel do Render)
+      - key: DB_HOST
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_PORT
+        value: 5432
+      # URL do frontend (será preenchida automaticamente após criar o serviço frontend)
+      - key: FRONTEND_URL
+        sync: false
+
+  # Frontend Next.js - Dashboard
+  - type: web
+    name: bus-monitoring-frontend
+    env: node
+    rootDir: client
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      # URL da API backend (será preenchida automaticamente após criar o serviço backend)
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: bus-monitoring-api
+          property: host
+
+  # Banco de Dados PostgreSQL (Opcional)
+  # Descomente se quiser usar banco de dados
+  # - type: pspg
+  #   name: bus-monitoring-db
+  #   plan: free
+  #   databaseName: bus_monitoring
+  #   user: bus_user
+
