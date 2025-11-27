@@ -6,7 +6,7 @@ services:
     plan: free
     rootDir: server
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn main:create_app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    startCommand: gunicorn main:create_app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -49,9 +49,10 @@ services:
 
   # Banco de Dados PostgreSQL (Opcional)
   # Descomente se quiser usar banco de dados gratuito
-  - type: pspg
-    name: bus-monitoring-db
-    plan: free
-    databaseName: bus_monitoring
-    user: bus_user
+  # IMPORTANTE: Free Postgres expira após 30 dias e tem limite de 1GB
+  # - type: pspg
+  #   name: bus-monitoring-db
+  #   plan: free
+  #   databaseName: bus_monitoring
+  #   user: bus_user
 
