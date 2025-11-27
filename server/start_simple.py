@@ -3,10 +3,7 @@
 Script de Inicialização do Sistema Simplificado
 Sistema de Monitoramento IoT para Ônibus - Schema Reduzido
 """
-
-import os
 import sys
-import subprocess
 import logging
 from pathlib import Path
 
