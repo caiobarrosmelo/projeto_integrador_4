@@ -3,6 +3,7 @@ services:
   - type: web
     name: bus-monitoring-api
     env: python
+    plan: free
     rootDir: server
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn main:create_app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
@@ -32,6 +33,7 @@ services:
   - type: web
     name: bus-monitoring-frontend
     env: node
+    plan: free
     rootDir: client
     buildCommand: npm install && npm run build
     startCommand: npm start
@@ -46,10 +48,10 @@ services:
           property: host
 
   # Banco de Dados PostgreSQL (Opcional)
-  # Descomente se quiser usar banco de dados
-  # - type: pspg
-  #   name: bus-monitoring-db
-  #   plan: free
-  #   databaseName: bus_monitoring
-  #   user: bus_user
+  # Descomente se quiser usar banco de dados gratuito
+  - type: pspg
+    name: bus-monitoring-db
+    plan: free
+    databaseName: bus_monitoring
+    user: bus_user
 
