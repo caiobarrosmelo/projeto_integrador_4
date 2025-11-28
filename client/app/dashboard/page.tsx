@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 const DISABLE_AUTH = false;
 
 const DEFAULT_POWERBI_URL =
-  "https://app.powerbi.com/view?r=eyJrIjoiNGY2ZjZjM2ItNWJmYy00MDU5LThlZDQtYzU2ZjgxZGM1ZGU2IiwidCI6IjRhMjJmMTE2LTUxY2UtNGZlMy1hZWFhLTljNDYxNDNkMDg4YiJ9";
+  " https://app.powerbi.com/view?r=eyJrIjoiMmY5YjQyNTgtZmQwMS00ZjhmLWI1YjYtZTZhNTA0NWZmNWMxIiwidCI6IjRhMjJmMTE2LTUxY2UtNGZlMy1hZWFhLTljNDYxNDNkMDg4YiJ9";
 
 export default function DashboardPage() {
   if (DISABLE_AUTH) {
