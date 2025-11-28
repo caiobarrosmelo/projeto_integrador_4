@@ -1,64 +1,62 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card } from "@/components/ui/card"
-import { Clock, Thermometer } from "lucide-react"
+import Link from "next/link"
+import { useEffect, useMemo, useState } from "react"
+import { AlertTriangle, Clock, RefreshCw, Thermometer } from "lucide-react"
 
-interface BusArrival {
+import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { useCurrentBuses } from "@/lib/api"
+
+type NormalizedBus = {
   id: string
   line: string
-  arrivalTime: number // minutes
-  capacity: number // 0-4
-  lastUpdate: Date
+  arrivalMinutes: number | null
+  capacity: number
+  lastUpdate: string
 }
 
-interface WeatherData {
-  temperature: number
-  condition: string
+const formatTime = (date: Date) => {
+  return date.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })
 }
 
-export default function MockBusMonitorPage() {
+const getCapacityText = (capacity: number) => {
+  switch (capacity) {
+    case 0:
+      return "Vazio"
+    case 1:
+      return "Pouco cheio"
+    case 2:
+      return "Meio cheio"
+    case 3:
+      return "Cheio"
+    case 4:
+      return "Lotado"
+    default:
+      return "Sem dado"
+  }
+}
+
+const CapacityBars = ({ capacity }: { capacity: number }) => {
+  return (
+    <div className="flex gap-1">
+      {[0, 1, 2, 3].map((bar) => (
+        <div
+          key={bar}
+          className={`w-3 h-6 rounded-sm ${bar < capacity ? "bg-white" : "bg-[#1F1F1F]"}`}
+        />
+      ))}
+    </div>
+  )
+}
+
+export default function RealTimeArrivalsPage() {
   const [currentTime, setCurrentTime] = useState(new Date())
-  const [weather, setWeather] = useState<WeatherData>({ temperature: 28, condition: "Ensolarado" })
-  const [busArrivals, setBusArrivals] = useState<BusArrival[]>([
-    {
-      id: "1",
-      line: "001 - Centro",
-      arrivalTime: 3,
-      capacity: 1,
-      lastUpdate: new Date(),
-    },
-    {
-      id: "2",
-      line: "042 - Boa Viagem",
-      arrivalTime: 7,
-      capacity: 3,
-      lastUpdate: new Date(),
-    },
-    {
-      id: "3",
-      line: "195 - Casa Amarela",
-      arrivalTime: 12,
-      capacity: 2,
-      lastUpdate: new Date(),
-    },
-    {
-      id: "4",
-      line: "260 - Olinda",
-      arrivalTime: 18,
-      capacity: 0,
-      lastUpdate: new Date(),
-    },
-    {
-      id: "5",
-      line: "350 - Jaboatão",
-      arrivalTime: 25,
-      capacity: 4,
-      lastUpdate: new Date(),
-    },
-  ])
+  const { data: buses, loading, error, refetch } = useCurrentBuses(undefined, 10)
 
-  // Update current time every second
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date())
@@ -67,141 +65,108 @@ export default function MockBusMonitorPage() {
     return () => clearInterval(timer)
   }, [])
 
-  // Simulate bus arrivals updates
-  useEffect(() => {
-    const updateBuses = () => {
-      setBusArrivals((prev) => {
-        const updated = prev.map((bus) => ({
-          ...bus,
-          arrivalTime: Math.max(0, bus.arrivalTime - 1),
-          capacity: Math.floor(Math.random() * 5), // Simulate capacity changes
-          lastUpdate: new Date(),
-        }))
+  const normalizedBuses = useMemo<NormalizedBus[]>(() => {
+    if (!buses) return []
 
-        // Remove buses that have arrived and add new ones
-        const activeBuses = updated.filter((bus) => bus.arrivalTime > 0)
-
-        // Add new buses if needed
-        while (activeBuses.length < 5) {
-          const newBus: BusArrival = {
-            id: Math.random().toString(36).substr(2, 9),
-            line: `${Math.floor(Math.random() * 400)
-              .toString()
-              .padStart(
-                3,
-                "0",
-              )} - ${["Centro", "Boa Viagem", "Casa Amarela", "Olinda", "Jaboatão"][Math.floor(Math.random() * 5)]}`,
-            arrivalTime: Math.floor(Math.random() * 30) + 1,
-            capacity: Math.floor(Math.random() * 5),
-            lastUpdate: new Date(),
-          }
-          activeBuses.push(newBus)
-        }
-
-        return activeBuses.sort((a, b) => a.arrivalTime - b.arrivalTime)
+    return buses
+      .map((bus) => ({
+        id: bus.id,
+        line: `${bus.line_code} - ${bus.line_name}`,
+        arrivalMinutes: typeof bus.eta?.minutes === "number" ? Math.max(0, Math.round(bus.eta.minutes)) : null,
+        capacity: bus.occupancy?.level ?? 0,
+        lastUpdate: bus.last_update,
+      }))
+      .sort((a, b) => {
+        const aMinutes = a.arrivalMinutes ?? Number.POSITIVE_INFINITY
+        const bMinutes = b.arrivalMinutes ?? Number.POSITIVE_INFINITY
+        return aMinutes - bMinutes
       })
-    }
-
-    const interval = setInterval(updateBuses, 60000) // Update every minute
-    return () => clearInterval(interval)
-  }, [])
-
-  const getCapacityText = (capacity: number) => {
-    switch (capacity) {
-      case 0:
-        return "Vazio"
-      case 1:
-        return "Pouco cheio"
-      case 2:
-        return "Meio cheio"
-      case 3:
-        return "Cheio"
-      case 4:
-        return "Lotado"
-      default:
-        return "Desconhecido"
-    }
-  }
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  }
-
-  const CapacityBars = ({ capacity }: { capacity: number }) => {
-    return (
-      <div className="flex gap-1">
-        {[0, 1, 2, 3].map((bar) => (
-          <div
-            key={bar}
-            className={`w-3 h-6 rounded-sm ${
-              bar < capacity
-                ? "bg-white" // All filled bars are now white
-                : "bg-[#1F1F1F]" // Changed empty bars color from #1E1E1E to #1F1F1F
-            }`}
-          />
-        ))}
-      </div>
-    )
-  }
+  }, [buses])
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header with time and weather */}
-        <Card className="p-6 text-center">
-          <div className="flex items-center justify-center gap-8 mb-4">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <Card className="p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
             <div className="flex items-center gap-3">
               <Clock className="h-8 w-8 text-white" />
               <span className="text-4xl font-bold font-mono">{formatTime(currentTime)}</span>
             </div>
             <div className="flex items-center gap-3">
               <Thermometer className="h-8 w-8 text-white" />
-              <span className="text-3xl font-semibold">{weather.temperature}°C</span>
+              <span className="text-3xl font-semibold">28°C</span>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground mt-2">{weather.condition}</p>
         </Card>
 
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-2">PRÓXIMOS ÔNIBUS</h1>
+          <h1 className="text-4xl font-bold mb-2">Próximos Ônibus</h1>
         </div>
 
-        <div className="space-y-3">
-          {busArrivals.map((bus) => (
-            <Card key={bus.id} className="p-6">
-              <div className="grid grid-cols-12 gap-4 items-center">
-                {/* Linha do ônibus - ocupa o espaço necessário */}
-                <div className="col-span-5">
-                  <div className="text-2xl font-bold font-mono text-white">{bus.line}</div>
-                </div>
-
-                {/* Indicador de lotação - coluna fixa centralizada */}
-                <div className="col-span-3 flex justify-center">
-                  <div className="flex flex-col items-center gap-1">
-                    <CapacityBars capacity={bus.capacity} />
-                    <span className="text-xs text-gray-400">{getCapacityText(bus.capacity).toUpperCase()}</span>
-                  </div>
-                </div>
-
-                {/* Tempo de chegada - coluna fixa à direita */}
-                <div className="col-span-4 text-right">
-                  <div className="text-5xl font-bold font-mono text-white">
-                    {bus.arrivalTime === 0 ? "CHEGANDO" : bus.arrivalTime}
-                  </div>
-                  {bus.arrivalTime > 0 && <div className="text-lg text-gray-400 font-semibold">MINUTOS</div>}
-                  <div className="text-xs text-gray-500 mt-2">Atualizado às {formatTime(bus.lastUpdate)}</div>
-                </div>
-              </div>
-            </Card>
-          ))}
+        <div className="flex justify-end">
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Atualizar agora
+          </Button>
         </div>
 
-        {/* Footer */}
-        <div className="text-center text-sm text-muted-foreground pt-4">
-          <p>ATUALIZAÇÃO AUTOMÁTICA - VISUAL MOCK</p>
+        {loading && (
+          <Card className="p-6 text-center">
+            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-500" />
+            <p>Carregando dados em tempo real...</p>
+          </Card>
+        )}
+
+        {error && (
+          <Card className="p-6 text-center border-destructive/50">
+            <AlertTriangle className="w-6 h-6 mx-auto mb-2 text-destructive" />
+            <p className="text-destructive font-semibold">Erro ao buscar dados: {error}</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Verifique se o backend em <code>http://localhost:3000</code> está ativo.
+            </p>
+          </Card>
+        )}
+
+        {!loading && !error && (
+          <div className="space-y-3">
+            {normalizedBuses.length === 0 ? (
+              <Card className="p-6 text-center text-muted-foreground">
+                Nenhum ônibus ativo nos últimos minutos. Tente novamente em instantes ou abra o dashboard completo.
+              </Card>
+            ) : (
+              normalizedBuses.map((bus) => (
+                <Card key={bus.id} className="p-6">
+                  <div className="grid grid-cols-12 gap-4 items-center">
+                    <div className="col-span-12 md:col-span-5">
+                      <div className="text-2xl font-bold font-mono text-white">{bus.line}</div>
+                    </div>
+                    <div className="col-span-6 md:col-span-3 flex flex-col items-center gap-1">
+                      <CapacityBars capacity={bus.capacity} />
+                      <span className="text-xs text-gray-400">LOTAÇÃO · {getCapacityText(bus.capacity).toUpperCase()}</span>
+                    </div>
+                    <div className="col-span-6 md:col-span-4 text-right">
+                      <div className="text-5xl font-bold font-mono text-white">
+                        {bus.arrivalMinutes === null ? "--" : bus.arrivalMinutes === 0 ? "AGORA" : bus.arrivalMinutes}
+                      </div>
+                      <div className="text-lg text-gray-400 font-semibold">
+                        {bus.arrivalMinutes === null ? "ETA indisponível" : "MINUTOS"}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            )}
+          </div>
+        )}
+
+        <div className="text-center text-sm text-muted-foreground pt-4 space-y-1">
+          <p>Atualizações automáticas a cada 30 segundos </p>
+          <p>
+            Dados fornecidos pela API Flask ·{" "}
+            <Link href="/mock" className="underline">
+              Ver modo mock
+            </Link>
+          </p>
         </div>
       </div>
     </div>

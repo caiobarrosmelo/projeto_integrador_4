@@ -53,7 +53,7 @@ export function useAuth() {
         email: null,
         loading: false,
       });
-      window.location.href = "/powerbi-dashboard";
+      window.location.href = "/dashboard";
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
     }

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 
 interface SimpleMFAProps {
   onSuccess: (email: string) => void;
@@ -86,11 +86,6 @@ export default function SimpleMFA({ onSuccess }: SimpleMFAProps) {
     return (
       <Card className="w-full max-w-md p-8 space-y-6">
         <div className="text-center space-y-4">
-          <div className="flex justify-center">
-            <div className="rounded-full bg-blue-100 dark:bg-blue-900 p-4">
-              <Shield className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            </div>
-          </div>
           <div>
             <h1 className="text-2xl font-bold">Acesso Restrito</h1>
             <p className="text-muted-foreground mt-2">
@@ -152,6 +147,15 @@ export default function SimpleMFA({ onSuccess }: SimpleMFAProps) {
               <p>Senha: admin123</p>
             </div>
           </div>
+          <div className="mt-4 flex justify-center">
+            <img 
+              src="/mfa-qrcode.png" 
+              alt="QR Code para MFA" 
+              width={120} 
+              height={120}
+              className="rounded"
+            />
+          </div>
         </div>
       </Card>
     );
@@ -162,11 +166,6 @@ export default function SimpleMFA({ onSuccess }: SimpleMFAProps) {
   return (
     <Card className="w-full max-w-md p-8 space-y-6">
       <div className="text-center space-y-4">
-        <div className="flex justify-center">
-          <div className="rounded-full bg-purple-100 dark:bg-purple-900 p-4">
-            <Shield className="h-8 w-8 text-purple-600 dark:text-purple-400" />
-          </div>
-        </div>
         <div>
           <h1 className="text-2xl font-bold">Verificar Código MFA</h1>
           <p className="text-muted-foreground mt-2">

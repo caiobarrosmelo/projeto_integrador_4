@@ -4,7 +4,7 @@ import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { ReactNode } from "react";
 import LoginButton from "./LoginButton";
 import { Card } from "@/components/ui/card";
-import { Shield, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 interface AuthenticatedContentProps {
   children: ReactNode;
@@ -19,11 +19,6 @@ export default function AuthenticatedContent({ children }: AuthenticatedContentP
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md p-8 space-y-6">
           <div className="text-center space-y-4">
-            <div className="flex justify-center">
-              <div className="rounded-full bg-blue-100 dark:bg-blue-900 p-4">
-                <Shield className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
             <div>
               <h1 className="text-2xl font-bold">Acesso Restrito</h1>
               <p className="text-muted-foreground mt-2">
