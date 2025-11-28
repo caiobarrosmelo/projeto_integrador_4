@@ -193,7 +193,6 @@ export default function MockBusMonitorPage() {
                     {bus.arrivalTime === 0 ? "CHEGANDO" : bus.arrivalTime}
                   </div>
                   {bus.arrivalTime > 0 && <div className="text-lg text-gray-400 font-semibold">MINUTOS</div>}
-                  <div className="text-xs text-gray-500 mt-2">Atualizado às {formatTime(bus.lastUpdate)}</div>
                 </div>
               </div>
             </Card>
